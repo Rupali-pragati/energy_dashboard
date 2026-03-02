@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UK Renewable Energy Dashboard</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+<div class="dashboard-container">
+
+  <header>
+    <h1>UK Renewable Energy Dashboard (1990–2023)</h1>
+    <p class="subtitle">
+      Interactive analysis of renewable energy production and adoption trends
+    </p>
+  </header>
+
+  <section class="controls">
+    <label for="yearDropdown">Select Year:</label>
+    <select id="yearDropdown"></select>
+  </section>
+
+  <section id="lineChart" class="chart-card"></section>
+  <section id="barChart" class="chart-card"></section>
+  <section id="percentageChart" class="chart-card"></section>
+
+</div>
+
+<div id="tooltip" class="tooltip"></div>
+
+<!-- Charts -->
+<script src="js/lineChart.js"></script>
+<script src="js/barChart.js"></script>
+<script src="js/percentageChart.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
