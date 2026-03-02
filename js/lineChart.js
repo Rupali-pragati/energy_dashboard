@@ -1,6 +1,3 @@
-
-  // Responsive Multi-Line Chart with Advanced Tooltip
-
 function initLineChart(data, energySources, colorScale) {
 
   const margin = { top: 40, right: 80, bottom: 50, left: 60 };
@@ -21,9 +18,8 @@ function initLineChart(data, energySources, colorScale) {
     .attr("viewBox", `0 0 ${fullWidth} ${fullHeight}`)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
-   
-    // Data Preparation
-   
+
+// Data Preparation
 
   const sortedData = data.slice().sort((a, b) => a.Year - b.Year);
 
@@ -35,8 +31,7 @@ function initLineChart(data, energySources, colorScale) {
     }))
   }));
 
-
-  // Scales
+// Scales
 
   const xMin = d3.min(sortedData, d => d.Year);
   const xMax = d3.max(sortedData, d => d.Year);
@@ -45,30 +40,20 @@ function initLineChart(data, energySources, colorScale) {
     .domain([xMin, xMax])
     .range([0, width]);
 
-  const yMax = d3.max(seriesData, s =>
-    d3.max(s.values, v => v.value)
-  );
-
   const yScale = d3.scaleLinear()
     .domain([0, 2])
     .nice()
     .range([height, 0]);
-
-
-  // Axes
+// Axes
 
   svg.append("g")
     .attr("transform", `translate(0,${height})`)
-    .call(
-      d3.axisBottom(xScale)
-        .tickFormat(d3.format("d"))
-    );
+    .call(d3.axisBottom(xScale).tickFormat(d3.format("d")));
 
   svg.append("g")
     .call(d3.axisLeft(yScale));
 
-   
-  //  Vertical Focus Line
+// Vertical Focus Line
 
   const focusLine = svg.append("line")
     .attr("stroke", "#aaa")
@@ -77,16 +62,14 @@ function initLineChart(data, energySources, colorScale) {
     .style("opacity", 0);
 
 
-  //  Line Generator
-
+//  Line Generator
   const lineGenerator = d3.line()
     .curve(d3.curveMonotoneX)
     .defined(d => !isNaN(d.value))
     .x(d => xScale(d.year))
     .y(d => yScale(d.value));
 
-
-// Draw Lines with Safe Animation
+// Draw Lines
 
   const paths = svg.selectAll(".energy-line")
     .data(seriesData)
@@ -101,6 +84,7 @@ function initLineChart(data, energySources, colorScale) {
     .attr("d", d => lineGenerator(d.values));
 
 // Animation
+
   paths.each(function() {
     const totalLength = this.getTotalLength();
 
@@ -119,26 +103,34 @@ function initLineChart(data, energySources, colorScale) {
   paths
     .on("mouseover", function(event, d) {
 
+      // Dim all lines
       d3.selectAll(".energy-line")
         .style("opacity", 0.2);
 
+      // Highlight hovered line
       d3.select(this)
         .style("opacity", 1)
         .transition()
         .duration(150)
         .style("stroke-width", 4);
+
+      // Dim all bars
+      d3.selectAll(".bar")
+        .style("opacity", 0.3);
+
+      // Highlight corresponding bar
+      d3.selectAll(".source-" + sanitize(d.source))
+        .style("opacity", 1)
+        .style("stroke", "black")
+        .style("stroke-width", 2);
     })
 
     .on("mousemove", function(event, d) {
 
       const [mouseX] = d3.pointer(event);
-
       const rawYear = xScale.invert(mouseX);
 
-      const clampedYear = Math.max(
-        xMin,
-        Math.min(xMax, rawYear)
-      );
+      const clampedYear = Math.max(xMin, Math.min(xMax, rawYear));
 
       const yearData = d.values.reduce((prev, curr) =>
         Math.abs(curr.year - clampedYear) < Math.abs(prev.year - clampedYear)
@@ -166,19 +158,24 @@ function initLineChart(data, energySources, colorScale) {
 
     .on("mouseout", function() {
 
+      // Reset lines
       d3.selectAll(".energy-line")
         .style("opacity", 1)
         .transition()
         .duration(150)
         .style("stroke-width", 3);
 
-      d3.select("#tooltip").style("opacity", 0);
+      // Reset bars
+      d3.selectAll(".bar")
+        .style("opacity", 1)
+        .style("stroke", "none");
 
+      d3.select("#tooltip").style("opacity", 0);
       focusLine.style("opacity", 0);
     });
 }
 
-// Helper Sanitize for Class Names
+// Helper — Sanitize for Class Names
 
 function sanitize(str) {
   return str.replace(/[^a-zA-Z0-9]/g, "");

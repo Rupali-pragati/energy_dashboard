@@ -1,5 +1,4 @@
 let barSvg, barXScale, barYScale, barWidth, barHeight;
-
 // using INIT FUNCTION
 function initBarChart(data, energySources, colorScale) {
 
@@ -64,8 +63,7 @@ function initBarChart(data, energySources, colorScale) {
     .style("font-weight", "bold");
 }
 
-
-//  Using UPDATE FUNCTION
+// using UPDATE FUNCTION
 function updateBarChart(selectedYear) {
 
   const filteredData = window.fullData.find(d => d.Year === selectedYear);
@@ -86,7 +84,7 @@ function updateBarChart(selectedYear) {
     .ease(d3.easeCubicOut)
     .call(d3.axisLeft(barYScale));
 
-  //  JOINing Data
+// DATA JOIN
   const bars = barSvg.selectAll(".bar")
     .data(formattedData, d => d.source);
 
@@ -110,7 +108,6 @@ function updateBarChart(selectedYear) {
 
   bars.exit().remove();
 
-
 // VALUE LABELS ABOVE BARS
   const labels = barSvg.selectAll(".value-label")
     .data(formattedData, d => d.source);
@@ -133,8 +130,7 @@ function updateBarChart(selectedYear) {
 
   labels.exit().remove();
 
-
-// TITLE
+// UPDATE TITLE
   barSvg.select(".bar-title")
     .text(`Energy Breakdown in ${selectedYear}`);
 }

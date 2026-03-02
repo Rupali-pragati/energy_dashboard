@@ -1,5 +1,3 @@
-// Global Configuration
-
 // Core Renewable Energy Sources
 const energySources = [
   "Hydroelectric power",
@@ -9,51 +7,90 @@ const energySources = [
   "Liquid bio-fuels"
 ];
 
-// Color scale (consistent across charts)
+// Consistent color scale
 const colorScale = d3.scaleOrdinal()
   .domain(energySources)
   .range(d3.schemeTableau10);
 
-
-// Load & Parse Data
+// Loading & Parse Data
 
 d3.csv("data/renewable_cleaned.csv").then(data => {
+
+  // Parse numeric fields
+  data.forEach(d => {
+
+    d.Year = +d.Year;
+
+    energySources.forEach(source => {
+      d[source] = +d[source] || 0;   // Prevent NaN
+    });
+
+    d["Percentage from renewable sources and waste"] =
+      +d["Percentage from renewable sources and waste"] || 0;
+  });
+
+  // Sort by Year (IMPORTANT for growth calculation)
+  data.sort((a, b) => a.Year - b.Year);
   window.fullData = data;
   window.energySources = energySources;
   window.colorScale = colorScale;
-  console.log("First row:", data[0]);
-  console.log("All columns:", Object.keys(data[0]));
-  // Parse numeric fields
-  data.forEach(d => {
-    d.Year = +d.Year;
-    
-    energySources.forEach(source => {
-      d[source] = +d[source];
-    });
-    console.log("Sample row after parsing:", data[0]);
-    console.log("All Year values:", data.map(d => d.Year));
 
-   d["Percentage from renewable sources and waste"] =
-  +d["Percentage from renewable sources and waste"];
+  console.log("Parsed first row:", data[0]);
+  console.log("Columns:", Object.keys(data[0]));
+
+
+// DATA AGGREGATION
+
+  // Total renewable per year
+  data.forEach(d => {
+    d.TotalRenewable =
+      d["Hydroelectric power"] +
+      d["Wind, wave, tidal [note1]"] +
+      d["Solar photovoltaic"] +
+      d["Biogas"] +
+      d["Liquid bio-fuels"];
   });
 
-  console.log("Parsed row sample:", data[0]);
-  console.log("Years extracted:", data.map(d => d.Year));
-//   Extract Unique Years
+  // Year-over-year growth (safe calculation)
+  for (let i = 1; i < data.length; i++) {
+
+    const prev = data[i - 1].TotalRenewable;
+    const current = data[i].TotalRenewable;
+
+    if (prev !== 0) {
+      data[i].GrowthRate = ((current - prev) / prev) * 100;
+    } else {
+      data[i].GrowthRate = 0;
+    }
+  }
+
+  data[0].GrowthRate = 0;
+
+  console.log("Aggregation check:", data[data.length - 1]);
+
+// Extract Unique Years
 
   const years = Array.from(new Set(data.map(d => d.Year)))
     .sort((a, b) => a - b);
 
   console.log("Years array:", years);
+  
 
- 
-//    Initialize Charts (Explicit Dependency Passing)
+// Initialize Charts
 
   initLineChart(data, energySources, colorScale);
   initBarChart(data, energySources, colorScale);
   initPercentageChart(data);
 
-//   Populate Dropdown
+  const latest = data[data.length - 1];
+
+document.getElementById("kpiTotal").innerText =
+  latest.TotalRenewable.toFixed(2) + " TWh";
+
+document.getElementById("kpiGrowth").innerText =
+  latest.GrowthRate.toFixed(2) + " %";
+
+// Populate Dropdown
 
   populateDropdown(years, data);
 
@@ -62,12 +99,12 @@ d3.csv("data/renewable_cleaned.csv").then(data => {
   console.error("Error loading CSV:", error);
 });
 
-// Dropdown Logic
+//  Dropdown Logic
+
 function populateDropdown(years, data) {
 
   const dropdown = d3.select("#yearDropdown");
 
-  // Bind years
   dropdown.selectAll("option")
     .data(years)
     .enter()
@@ -79,15 +116,10 @@ function populateDropdown(years, data) {
   const latestYear = years[years.length - 1];
   dropdown.property("value", latestYear);
 
-  // Initial bar chart update
   updateBarChart(latestYear);
-
-//  Dropdown Event Listener
-   
 
   dropdown.on("change", function() {
     const selectedYear = +this.value;
     updateBarChart(selectedYear);
   });
 }
-
