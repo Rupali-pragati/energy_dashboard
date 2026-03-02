@@ -1,12 +1,6 @@
-/*************************************************
- * Professional Dynamic Bar Chart (Upgraded)
- *************************************************/
-
 let barSvg, barXScale, barYScale, barWidth, barHeight;
 
-/*************************************************
- * INIT FUNCTION (Runs Once)
- *************************************************/
+// using INIT FUNCTION
 function initBarChart(data, energySources, colorScale) {
 
   const margin = { top: 50, right: 20, bottom: 80, left: 70 };
@@ -71,9 +65,7 @@ function initBarChart(data, energySources, colorScale) {
 }
 
 
-/*************************************************
- * UPDATE FUNCTION (Runs On Dropdown Change)
- *************************************************/
+//  Using UPDATE FUNCTION
 function updateBarChart(selectedYear) {
 
   const filteredData = window.fullData.find(d => d.Year === selectedYear);
@@ -94,9 +86,7 @@ function updateBarChart(selectedYear) {
     .ease(d3.easeCubicOut)
     .call(d3.axisLeft(barYScale));
 
-  /*************************************************
-   * DATA JOIN
-   *************************************************/
+  //  JOINing Data
   const bars = barSvg.selectAll(".bar")
     .data(formattedData, d => d.source);
 
@@ -121,9 +111,7 @@ function updateBarChart(selectedYear) {
   bars.exit().remove();
 
 
-  /*************************************************
-   * VALUE LABELS ABOVE BARS
-   *************************************************/
+// VALUE LABELS ABOVE BARS
   const labels = barSvg.selectAll(".value-label")
     .data(formattedData, d => d.source);
 
@@ -146,9 +134,7 @@ function updateBarChart(selectedYear) {
   labels.exit().remove();
 
 
-  /*************************************************
-   * UPDATE TITLE
-   *************************************************/
+// TITLE
   barSvg.select(".bar-title")
     .text(`Energy Breakdown in ${selectedYear}`);
 }
